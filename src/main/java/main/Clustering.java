@@ -35,7 +35,7 @@ public class Clustering {
     private static Gson gson = new Gson();
     
     private static final int TIME_LIMIT = 60000;
-    private static final int NUMBER_LIMIT = 5;
+    private static final int NUMBER_LIMIT = 10;
     
     public static void main(String[] args)  {
         
