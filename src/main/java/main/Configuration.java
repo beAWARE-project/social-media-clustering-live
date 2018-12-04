@@ -20,5 +20,6 @@ public class Configuration {
     public static String kafka_admin_url = "https://kafka-admin-prod02.messagehub.services.eu-gb.bluemix.net:443";
     
     //public static String DATA_STORAGE_URL = "http://object-store-app.eu-gb.mybluemix.net/objectStorage?file=";
-    public static String DATA_STORAGE_URL = "https://beaware.uk-south.containers.mybluemix.net/object-store/";
+    //public static String DATA_STORAGE_URL = "https://beaware.uk-south.containers.mybluemix.net/object-store/";
+    public static String DATA_STORAGE_URL = "https://beaware-1.eu-de.containers.appdomain.cloud/object-store/";
 }
