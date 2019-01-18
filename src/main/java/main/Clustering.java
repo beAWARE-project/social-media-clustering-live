@@ -55,7 +55,7 @@ public class Clustering {
                             String TwitterReportURL = generateReport(groupedTweets);
                             if(!TwitterReportURL.equals("")){
                                 Position center = getCenterPoint(collected,groupedTweets);
-                                TwitterReportMessage message = generateMessage(groupedTweets.get(0), "Thessaloniki", center.getLatitude(), center.getLongitude(), TwitterReportURL, "el-GR", "Twitter Report","");
+                                TwitterReportMessage message = generateMessage(groupedTweets.get(0), "Vicenza", center.getLatitude(), center.getLongitude(), TwitterReportURL, "it-IT", "Twitter Report","");
                                 String messageJSON = gson.toJson(message);
                                 try{
                                     bus.post(Configuration.TOP003_SOCIAL_MEDIA_REPORT, messageJSON);
