@@ -21,7 +21,7 @@ import org.apache.commons.math3.ml.clustering.DoublePoint;
  */
 public class DBSCAN {
     
-    private final static double EPS = 0.01;
+    private final static double EPS = 0.001;
     
     private final static int MIN_PTS = 0;
     
@@ -29,13 +29,14 @@ public class DBSCAN {
         
         List<Tweet> tweets = new ArrayList<>();
         
-        tweets.add(new Tweet("1060484417116872705", 40.363, 22.5825));
-        tweets.add(new Tweet("1060484417116872705", 40.363, 22.5825));
-        tweets.add(new Tweet("1060484417116872705", 40.363, 22.5825));
-        tweets.add(new Tweet("1060484417116872705", 40.363, 22.5825));
-        tweets.add(new Tweet("1060484417116872705", 40.363, 22.5825));
-        tweets.add(new Tweet("1060484450319036416", 40.3714,  22.5753));
-        tweets.add(new Tweet("1060484485190504448", 40.6325,  22.9407));
+        tweets.add(new Tweet("1060484417116872705", 45.5493, 11.5497));
+        tweets.add(new Tweet("1060484417116872706", 45.5493, 11.5497));
+        tweets.add(new Tweet("1060484417116872707", 45.5493, 11.5497));
+        tweets.add(new Tweet("1060484450319036416", 45.5502, 11.5505));
+        tweets.add(new Tweet("1060484485190504448", 45.5505, 11.5450));
+        tweets.add(new Tweet("1060484485190504457", 45.5522, 11.5494));
+        tweets.add(new Tweet("1060484485190504458", 45.5522, 11.5494));
+        tweets.add(new Tweet("1060484485190504311", 45.5455, 11.5354));
         
         Map<Integer, List<String>> clusters = getClusters(tweets);
         
