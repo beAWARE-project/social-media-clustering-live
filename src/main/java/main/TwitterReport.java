@@ -102,7 +102,7 @@ public class TwitterReport {
         Attachment attachment = new Attachment(attachmentURL.split("/")[attachmentURL.split("/").length-1], "webpage", now, attachmentURL);
         List<Attachment> attachments = new ArrayList<>();
         attachments.add(attachment);
-        TwitterReportBody body = new TwitterReportBody("SMA", "INC_SMA_C_"+id+"_"+epoch, language, "Other", /*"Twitter Report", */"undefined", "Unknown", "Observed","2019-01-01T12:00:00Z", title, now, description, position, attachments);
+        TwitterReportBody body = new TwitterReportBody("SMA", "INC_SMA_C_"+id+"_"+epoch, language, "Other", /*"Twitter Report", */"undefined", "Unknown", "Observed","2020-01-01T12:00:00Z", title, now, description, position, attachments);
         TwitterReportMessage message = new TwitterReportMessage(header, body);
         
         return message;
