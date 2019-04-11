@@ -21,7 +21,7 @@ spec:
         app: social-media-clustering-live
     spec:
       containers:
-      - image: beaware/social-media-clustering-live:IMAGE_TAG
+      - image: beaware/social-media-clustering-live:v2
         imagePullPolicy: Always
         name: social-media-clustering-live
         ports:
