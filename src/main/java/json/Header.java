@@ -53,4 +53,8 @@ public class Header {
         this.references = references;
     }
     
+    public String getDistrict(){
+        return district;
+    }
+    
 }

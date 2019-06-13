@@ -23,6 +23,7 @@ import json.*;
 import static main.TwitterReport.*;
 import mykafka.Bus;
 import static utils.DBSCAN.getClusters;
+import org.json.*;
 
 /**
  *
@@ -36,14 +37,20 @@ public class Clustering {
     
     private static final int TIME_LIMIT = 60000;
     private static final int NUMBER_LIMIT = 10;
+    private static final boolean USE_MTA = false;
     
     public static void main(String[] args)  {
         
         KafkaConsumer<String, String> kafkaConsumer = busReader.getKafkaConsumer();
-        kafkaConsumer.subscribe(Arrays.asList(Configuration.TOP001_SOCIAL_MEDIA_TEXT));
+        if(USE_MTA){
+            kafkaConsumer.subscribe(Arrays.asList(Configuration.TOP028_TEXT_ANALYSED));
+        }else{
+            kafkaConsumer.subscribe(Arrays.asList(Configuration.TOP001_SOCIAL_MEDIA_TEXT));
+        }
         
         long startTime = System.currentTimeMillis();
         ArrayList<Tweet> collected = new ArrayList<>();
+        String district = "", language = "";
         
         try {
             while (true) {
@@ -55,7 +62,7 @@ public class Clustering {
                             String TwitterReportURL = generateReport(groupedTweets);
                             if(!TwitterReportURL.equals("")){
                                 Position center = getCenterPoint(collected,groupedTweets);
-                                TwitterReportMessage message = generateMessage(groupedTweets.get(0), "Vicenza", center.getLatitude(), center.getLongitude(), TwitterReportURL, "it-IT", "Twitter Report","");
+                                TwitterReportMessage message = generateMessage(groupedTweets.get(0), district, center.getLatitude(), center.getLongitude(), TwitterReportURL, language, "Twitter Report","");
                                 String messageJSON = gson.toJson(message);
                                 try{
                                     bus.post(Configuration.TOP003_SOCIAL_MEDIA_REPORT, messageJSON);
@@ -73,20 +80,41 @@ public class Clustering {
                     for (ConsumerRecord<String, String> record : records)
                     {
                         String message_str = record.value();
-                        Type type = new TypeToken<SocialMediaTextMessage>() {}.getType();
-                        SocialMediaTextMessage message = gson.fromJson(message_str, type);
-
-                        String incidentID = message.getBody().getIncidentID();
-                        if(incidentID.contains("_")){
-                            if(incidentID.split("_").length == 3){
-                                String id = incidentID.split("_")[2];
-                                Position position = message.getBody().getPosition();
-                                if(position!=null){
-                                    System.out.println(id + " " + position.getLatitude() + " " + position.getLongitude());
-                                    if(collected.isEmpty()){
-                                        startTime = System.currentTimeMillis();
+                        if(USE_MTA){
+                            JSONObject obj = new JSONObject(message_str);
+                            String incidentID = obj.getJSONObject("body").getString("incidentID");
+                            if(incidentID.contains("_")){
+                                if(incidentID.split("_").length == 3){
+                                    String id = incidentID.split("_")[2];
+                                    ArrayList<Position> positions = getPositionFromJSON(message_str);
+                                    for(Position position : positions){
+                                        //System.out.println(id + " " + position.getLatitude() + " " + position.getLongitude());
+                                        if(collected.isEmpty()){
+                                            startTime = System.currentTimeMillis();
+                                        }
+                                        collected.add(new Tweet(id, position.getLatitude(), position.getLongitude()));
+                                        district = obj.getJSONObject("header").getString("district");
+                                        language = obj.getJSONObject("body").getString("language");
                                     }
-                                    collected.add(new Tweet(id, position.getLatitude(), position.getLongitude()));
+                                }
+                            }
+                        }else{
+                            Type type = new TypeToken<SocialMediaTextMessage>() {}.getType();
+                            SocialMediaTextMessage message = gson.fromJson(message_str, type);
+                            String incidentID = message.getBody().getIncidentID();
+                            if(incidentID.contains("_")){
+                                if(incidentID.split("_").length == 3){
+                                    String id = incidentID.split("_")[2];
+                                    Position position = message.getBody().getPosition();
+                                    if(position!=null){
+                                        //System.out.println(id + " " + position.getLatitude() + " " + position.getLongitude());
+                                        if(collected.isEmpty()){
+                                            startTime = System.currentTimeMillis();
+                                        }
+                                        collected.add(new Tweet(id, position.getLatitude(), position.getLongitude()));
+                                        district = message.getBody().getLanguage();
+                                        language = message.getHeader().getDistrict();
+                                    }
                                 }
                             }
                         }
@@ -96,6 +124,33 @@ public class Clustering {
         } finally {
           kafkaConsumer.close(); 
         }
+        
+    }
+    
+    private static ArrayList<Position> getPositionFromJSON(String message_str){
+                
+        ArrayList<Position> positions = new ArrayList<>();
+        
+        try{
+            JSONObject obj = new JSONObject(message_str);
+
+            JSONObject data = obj.getJSONObject("body").getJSONObject("data");
+            JSONArray concepts = data.toJSONArray(data.names());
+            for (int i = 0; i < concepts.length(); i++){
+                JSONArray participants = concepts.getJSONObject(i).getJSONArray("participants");
+                for (int j = 0; j < participants.length(); j++){
+                    if(participants.getJSONObject(j).getString("role").equals("location")){
+                        double latitude = participants.getJSONObject(j).getJSONObject("participant").getJSONObject("location").getDouble("latitude");
+                        double longitude = participants.getJSONObject(j).getJSONObject("participant").getJSONObject("location").getDouble("longitude");
+                        positions.add(new Position(latitude,longitude));
+                    }
+                }
+            }
+        }catch(JSONException ex){
+            return positions;
+        }
+        
+        return positions;
         
     }
     

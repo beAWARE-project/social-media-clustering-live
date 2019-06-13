@@ -15,7 +15,7 @@ public class TextAnalysedBody {
     String language;
     String incidentID;
     String startTimeUTC;
-    /*Data data*/
+    /*Data data;*/
     
     public TextAnalysedBody(){
         

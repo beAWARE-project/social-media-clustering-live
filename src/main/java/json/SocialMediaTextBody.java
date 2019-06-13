@@ -67,4 +67,8 @@ public class SocialMediaTextBody {
         return this.position;
     }
     
+    public String getLanguage(){
+        return this.language;
+    }
+    
 }
