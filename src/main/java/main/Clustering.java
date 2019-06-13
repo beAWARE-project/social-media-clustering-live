@@ -112,8 +112,8 @@ public class Clustering {
                                             startTime = System.currentTimeMillis();
                                         }
                                         collected.add(new Tweet(id, position.getLatitude(), position.getLongitude()));
-                                        district = message.getBody().getLanguage();
-                                        language = message.getHeader().getDistrict();
+                                        district = message.getHeader().getDistrict();
+                                        language = message.getBody().getLanguage();
                                     }
                                 }
                             }
