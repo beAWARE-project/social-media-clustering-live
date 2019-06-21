@@ -37,7 +37,7 @@ public class Clustering {
     
     private static final int TIME_LIMIT = 60000;
     private static final int NUMBER_LIMIT = 10;
-    private static final boolean USE_MTA = false;
+    private static final boolean USE_MTA = true;
     
     public static void main(String[] args)  {
         
@@ -82,19 +82,35 @@ public class Clustering {
                         String message_str = record.value();
                         if(USE_MTA){
                             JSONObject obj = new JSONObject(message_str);
-                            String incidentID = obj.getJSONObject("body").getString("incidentID");
-                            if(incidentID.contains("_")){
-                                if(incidentID.split("_").length == 3){
-                                    String id = incidentID.split("_")[2];
-                                    ArrayList<Position> positions = getPositionFromJSON(message_str);
-                                    for(Position position : positions){
-                                        //System.out.println(id + " " + position.getLatitude() + " " + position.getLongitude());
-                                        if(collected.isEmpty()){
-                                            startTime = System.currentTimeMillis();
+                            if(obj.getJSONObject("body").getString("incidentOriginator").equals("SMA")){
+                                String incidentID = obj.getJSONObject("body").getString("incidentID");
+                                if(incidentID.contains("_")){
+                                    if(incidentID.split("_").length == 3){
+                                        String id = incidentID.split("_")[2];
+                                        ArrayList<Position> positions = getPositionFromJSON(message_str);
+                                        if(positions.isEmpty()){
+                                            if(obj.getJSONObject("body").has("position")){
+                                                //System.out.println(id + " " + obj.getJSONObject("body").getJSONObject("position").getDouble("latitude") + " " + obj.getJSONObject("body").getJSONObject("position").getDouble("longitude"));
+                                                if(collected.isEmpty()){
+                                                    startTime = System.currentTimeMillis();
+                                                }
+                                                collected.add(new Tweet(id, obj.getJSONObject("body").getJSONObject("position").getDouble("latitude"), obj.getJSONObject("body").getJSONObject("position").getDouble("longitude")));
+                                                district = obj.getJSONObject("header").getString("district");
+                                                language = obj.getJSONObject("body").getString("language");
+                                            }/*else{
+                                                System.out.println("No position");
+                                            }*/
+                                        }else{
+                                            for(Position position : positions){
+                                                //System.out.println(id + " " + position.getLatitude() + " " + position.getLongitude());
+                                                if(collected.isEmpty()){
+                                                    startTime = System.currentTimeMillis();
+                                                }
+                                                collected.add(new Tweet(id, position.getLatitude(), position.getLongitude()));
+                                                district = obj.getJSONObject("header").getString("district");
+                                                language = obj.getJSONObject("body").getString("language");
+                                            }
                                         }
-                                        collected.add(new Tweet(id, position.getLatitude(), position.getLongitude()));
-                                        district = obj.getJSONObject("header").getString("district");
-                                        language = obj.getJSONObject("body").getString("language");
                                     }
                                 }
                             }
@@ -118,6 +134,7 @@ public class Clustering {
                                 }
                             }
                         }
+                            
                     }
                 }
             }
