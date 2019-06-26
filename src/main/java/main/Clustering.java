@@ -41,6 +41,7 @@ public class Clustering {
     
     public static void main(String[] args)  {
         
+        
         KafkaConsumer<String, String> kafkaConsumer = busReader.getKafkaConsumer();
         if(USE_MTA){
             kafkaConsumer.subscribe(Arrays.asList(Configuration.TOP028_TEXT_ANALYSED));
@@ -90,19 +91,15 @@ public class Clustering {
                                         ArrayList<Position> positions = getPositionFromJSON(message_str);
                                         if(positions.isEmpty()){
                                             if(obj.getJSONObject("body").has("position")){
-                                                //System.out.println(id + " " + obj.getJSONObject("body").getJSONObject("position").getDouble("latitude") + " " + obj.getJSONObject("body").getJSONObject("position").getDouble("longitude"));
                                                 if(collected.isEmpty()){
                                                     startTime = System.currentTimeMillis();
                                                 }
                                                 collected.add(new Tweet(id, obj.getJSONObject("body").getJSONObject("position").getDouble("latitude"), obj.getJSONObject("body").getJSONObject("position").getDouble("longitude")));
                                                 district = obj.getJSONObject("header").getString("district");
                                                 language = obj.getJSONObject("body").getString("language");
-                                            }/*else{
-                                                System.out.println("No position");
-                                            }*/
+                                            }
                                         }else{
                                             for(Position position : positions){
-                                                //System.out.println(id + " " + position.getLatitude() + " " + position.getLongitude());
                                                 if(collected.isEmpty()){
                                                     startTime = System.currentTimeMillis();
                                                 }
@@ -123,7 +120,6 @@ public class Clustering {
                                     String id = incidentID.split("_")[2];
                                     Position position = message.getBody().getPosition();
                                     if(position!=null){
-                                        //System.out.println(id + " " + position.getLatitude() + " " + position.getLongitude());
                                         if(collected.isEmpty()){
                                             startTime = System.currentTimeMillis();
                                         }
@@ -154,13 +150,10 @@ public class Clustering {
             JSONObject data = obj.getJSONObject("body").getJSONObject("data");
             JSONArray concepts = data.toJSONArray(data.names());
             for (int i = 0; i < concepts.length(); i++){
-                JSONArray participants = concepts.getJSONObject(i).getJSONArray("participants");
-                for (int j = 0; j < participants.length(); j++){
-                    if(participants.getJSONObject(j).getString("role").equals("location")){
-                        double latitude = participants.getJSONObject(j).getJSONObject("participant").getJSONObject("location").getDouble("latitude");
-                        double longitude = participants.getJSONObject(j).getJSONObject("participant").getJSONObject("location").getDouble("longitude");
-                        positions.add(new Position(latitude,longitude));
-                    }
+                if(!concepts.getJSONObject(i).isNull("location")){
+                    double latitude = concepts.getJSONObject(i).getJSONObject("location").getDouble("latitude");
+                    double longitude = concepts.getJSONObject(i).getJSONObject("location").getDouble("longitude");
+                    positions.add(new Position(latitude,longitude));
                 }
             }
         }catch(JSONException ex){
