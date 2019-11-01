@@ -6,4 +6,4 @@ COPY target/social-media-clustering-live-1.0-jar-with-dependencies.jar /usr/src/
 
 WORKDIR /usr/src/social-media-clustering-live
 
-CMD ["java", "-jar", "social-media-clustering-live-1.0-jar-with-dependencies.jar"]
+#CMD ["java", "-jar", "social-media-clustering-live-1.0-jar-with-dependencies.jar"]
