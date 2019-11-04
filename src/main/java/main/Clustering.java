@@ -7,6 +7,10 @@ package main;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.MongoClient;
 import java.io.IOException;
 import java.util.Arrays;
 import mykafka.BusReader;
@@ -14,6 +18,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import java.lang.reflect.Type;
+import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +31,7 @@ import static main.TwitterReport.*;
 import mykafka.Bus;
 import static utils.DBSCAN.getClusters;
 import org.json.*;
+import utils.MongoAPI;
 
 /**
  *
@@ -97,6 +105,7 @@ public class Clustering {
                                                 collected.add(new Tweet(id, obj.getJSONObject("body").getJSONObject("position").getDouble("latitude"), obj.getJSONObject("body").getJSONObject("position").getDouble("longitude")));
                                                 district = obj.getJSONObject("header").getString("district");
                                                 language = obj.getJSONObject("body").getString("language");
+                                                storeLocation(id, obj.getJSONObject("body").getJSONObject("position").getDouble("latitude"),obj.getJSONObject("body").getJSONObject("position").getDouble("longitude"));
                                             }
                                         }else{
                                             for(Position position : positions){
@@ -106,6 +115,7 @@ public class Clustering {
                                                 collected.add(new Tweet(id, position.getLatitude(), position.getLongitude()));
                                                 district = obj.getJSONObject("header").getString("district");
                                                 language = obj.getJSONObject("body").getString("language");
+                                                storeLocation(id, position.getLatitude(),position.getLongitude());
                                             }
                                         }
                                     }
@@ -126,6 +136,7 @@ public class Clustering {
                                         collected.add(new Tweet(id, position.getLatitude(), position.getLongitude()));
                                         district = message.getHeader().getDistrict();
                                         language = message.getBody().getLanguage();
+                                        storeLocation(id, position.getLatitude(),position.getLongitude());
                                     }
                                 }
                             }
@@ -164,4 +175,20 @@ public class Clustering {
         
     }
     
+    private static void storeLocation(String id, Double latitude, Double longitude){
+        try{
+            MongoClient mongoClient = MongoAPI.connect();
+            DB db = mongoClient.getDB("BeAware");
+            DBCollection collection = db.getCollection("Consumer");
+
+            Double[] coordinates = {latitude,longitude};
+            BasicDBObject newDocument = new BasicDBObject().append("$set", new BasicDBObject().append("coordinates", new BasicDBObject().append("type", "Point").append("coordinates",coordinates)));
+            BasicDBObject searchQuery = new BasicDBObject().append("id_str", id);
+            collection.updateMulti(searchQuery, newDocument);
+
+            mongoClient.close();
+        }catch(UnknownHostException | KeyManagementException | NoSuchAlgorithmException e){
+            System.out.println("Error while storing a location: " + e);
+        }
+    }
 }
